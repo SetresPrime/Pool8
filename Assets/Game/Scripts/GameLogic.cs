@@ -3,22 +3,25 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+[RequireComponent(typeof(Rigidbody))]
 public class GameLogic : MonoBehaviour
 {
     [SerializeField]
     private GameObject WBCenter;
     [SerializeField] 
-    private GameObject HitPoint;
+    private GameObject hitPoint;
     [SerializeField]
     private Camera _camera;
     [SerializeField]
     private float multiplier;
 
     private Rigidbody rb;
-    private Vector3 HitVec;
+    private Vector3 hitVec;
 
+    const float stopSpeed = 0.01f;
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -33,7 +36,7 @@ public class GameLogic : MonoBehaviour
     }
     void CuePos()
     {
-        HitVec = new Vector3(HitPoint.transform.position.x - transform.position.x, 0, HitPoint.transform.position.z - transform.position.z);
+        hitVec = new Vector3(hitPoint.transform.position.x - transform.position.x, 0, hitPoint.transform.position.z - transform.position.z);
 
         var MousePos = _camera.ScreenToWorldPoint(Input.mousePosition) + new Vector3(0, transform.position.y, 0);
         var Distance = MousePos - gameObject.transform.position;
@@ -42,14 +45,19 @@ public class GameLogic : MonoBehaviour
     }
     public void Strike()
     {
-        rb.AddForce(-HitVec * multiplier, ForceMode.Impulse) ;
+        if (rb.velocity.magnitude <= stopSpeed)
+            rb.AddForce(-hitVec * multiplier, ForceMode.Impulse) ;
     }
     void HideCue()
     {
-        if (!HitPoint.activeSelf && rb.velocity.magnitude <= 0.01)
-            HitPoint.SetActive(true);
-        else if (HitPoint.activeSelf && rb.velocity.magnitude > 0.01)
-            HitPoint.SetActive(false);
+        if (!hitPoint.activeSelf && rb.velocity.magnitude <= stopSpeed)
+            hitPoint.SetActive(true);
+        else if (hitPoint.activeSelf && rb.velocity.magnitude > stopSpeed)
+            hitPoint.SetActive(false);
+    }
+    public void Restart()
+    {
+        SceneManager.LoadScene("pool8");
     }
 }
         
